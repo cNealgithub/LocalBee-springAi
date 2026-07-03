@@ -1,5 +1,6 @@
 package com.cnealgithub.springAiTut.Config;
 
+import com.cnealgithub.springAiTut.Advisors.CustomTokenCountAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
@@ -19,7 +20,8 @@ public class AiConfig {
 //                .defaultSystem("You are an technology expert and will answer tech related questions ")
                 //we cam add Advisors or middlewares to do specific tasks and operations like 1) logging and
                 // 2) stopping response for sensitive words and many more things like this:
-                .defaultAdvisors(new SimpleLoggerAdvisor(), //this helps in logging
+                .defaultAdvisors(new CustomTokenCountAdvisor(),
+//                         new SimpleLoggerAdvisor(), //this helps in logging
                          new SafeGuardAdvisor(List.of("game", "games", "Fraud"))) //this advisor helps in gaurding the llm to respond for any given sensitive word
                 .defaultOptions(OllamaChatOptions.builder()
                         .model("llama3.2:latest")

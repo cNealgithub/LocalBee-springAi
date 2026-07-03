@@ -9,6 +9,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
@@ -91,5 +92,26 @@ public class AiServiceImpl implements AiService {
                 .getOutput()
                 .getText();
         return response;
+    }
+
+    @Override
+    public Flux<String> streamingChatResponse(String uQuery, String sm) {
+
+        String rawUserQuery = "what is {uQuery} , answer in points";
+        PromptTemplate promptTemplate = PromptTemplate.builder().template(rawUserQuery).build();
+        String renderedMessage = promptTemplate.render(Map.of(
+                "uQuery", uQuery
+        ));
+        String rawSystemMessage = "you are an expert in {subjectMatter} and always give real life examples";
+        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder().template(rawSystemMessage).build();
+        String renderedSystemMessage = systemPromptTemplate.render(Map.of(
+                "subjectMatter", sm
+        ));
+        return this.ollamaChatClient
+                .prompt()
+                .system(rawSystemMessage)
+                .user(renderedMessage)
+                .stream()
+                .content();
     }
 }

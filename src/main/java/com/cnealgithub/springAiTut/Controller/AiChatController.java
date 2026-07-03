@@ -5,6 +5,7 @@ import com.cnealgithub.springAiTut.Service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 @CrossOrigin("*")
 @RestController
@@ -27,5 +28,11 @@ public class AiChatController {
     public ResponseEntity<String> chat_template(@RequestParam(value = "uQuery")String uQuery,
                                                 @RequestParam(value = "sm")String subjectMatter){
        return ResponseEntity.ok(aiService.chatTemplate(uQuery, subjectMatter));
+   }
+
+   @GetMapping("/stream-chat")
+    public ResponseEntity<Flux<String>> streamingChat(@RequestParam(value = "uQuery") String uQuery,
+                                                      @RequestParam(value = "sm") String sm){
+       return ResponseEntity.ok(aiService.streamingChatResponse(uQuery, sm));
    }
 }

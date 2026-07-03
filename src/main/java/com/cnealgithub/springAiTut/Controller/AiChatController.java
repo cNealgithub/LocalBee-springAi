@@ -3,7 +3,6 @@ package com.cnealgithub.springAiTut.Controller;
 import com.cnealgithub.springAiTut.Entity.ResponseStructure;
 import com.cnealgithub.springAiTut.Service.AiService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,5 +22,10 @@ public class AiChatController {
     public ResponseEntity<ResponseStructure> structuredChat(@RequestParam(value = "q") String query){
        System.out.println("Structure chat controller is working");
     return ResponseEntity.ok(aiService.structuredChatResponse(query));
+   }
+   @GetMapping("/ChatTemplate")
+    public ResponseEntity<String> chat_template(@RequestParam(value = "uQuery")String uQuery,
+                                                @RequestParam(value = "sm")String subjectMatter){
+       return ResponseEntity.ok(aiService.chatTemplate(uQuery, subjectMatter));
    }
 }

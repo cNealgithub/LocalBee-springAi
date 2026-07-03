@@ -5,8 +5,12 @@ import com.cnealgithub.springAiTut.Service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,18 +25,18 @@ public class AiServiceImpl implements AiService {
         Prompt prompt1 = new Prompt(query, OllamaChatOptions.builder()
                 .model("llama3.2:latest")
                 .temperature(0.3).build());
-        String systemPromptParser = "You are an expert technical curator for a developer marketplace. " +
+        String systemPrompt = "You are an expert technical curator for a developer marketplace. " +
                 "When a user requests a" +
                 " code template, you must return ONLY the raw code block. Do not include greetings, explanations, or markdown formatting outside of the code itself." +
                 ", Now reply for this query :{query} ";
         try {
             //we will now try to do prompt parsing for better results
             //ex if i want llm to give codes inly in java then i must parse the user prompt with some system
-            //prompt that will guide the llm to use java language , hence creating an effeicint and good prompt
+            //prompt that will guide the llm to use java language , hence creating an efficient and good prompt
             response = ollamaChatClient
                     .prompt()
                     // using
-                    .user(u-> u.text(systemPromptParser).param("query", query))
+                    .user(u-> u.text(systemPrompt).param("query", query))
                     .call()
                     .chatResponse()
                     .getResult()
@@ -59,6 +63,33 @@ public class AiServiceImpl implements AiService {
                 .call()
                 .entity(ResponseStructure.class);
         System.out.println(response);
+        return response;
+    }
+
+//    PROMPT PARSING TECHNIQUES
+    @Override
+    public String chatTemplate(String uQuery, String subjectMatter) {
+        String rawTemplate = "what is { uQuery} , answer in points.";
+        PromptTemplate promptTemplate = PromptTemplate.builder().template(rawTemplate).build();
+        String renderedMessage = promptTemplate.render(Map.of(
+                "uQuery", uQuery
+        ));
+        // we can also add role specific templates:-
+        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
+                .template("you are an expert in {subjectMatter} and always give real life examples ")
+                .build();
+        var systemRolePrompt = systemPromptTemplate.render(Map.of(
+                "subjectMatter", subjectMatter
+        ));
+        Prompt prompt = new Prompt(renderedMessage);
+        String response = ollamaChatClient
+                .prompt(prompt)
+                .system(systemRolePrompt)
+                .call()
+                .chatResponse()
+                .getResult()
+                .getOutput()
+                .getText();
         return response;
     }
 }

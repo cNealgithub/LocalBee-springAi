@@ -7,4 +7,6 @@ public interface AiService {
      String chat(String query);
 
      ResponseStructure structuredChatResponse(String query);
+
+     String chatTemplate(String uQuery, String subjectMatter);
 }

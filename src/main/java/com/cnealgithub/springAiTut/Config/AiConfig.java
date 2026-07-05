@@ -1,9 +1,13 @@
 package com.cnealgithub.springAiTut.Config;
 
 import com.cnealgithub.springAiTut.Advisors.CustomTokenCountAdvisor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.context.annotation.Bean;
@@ -14,17 +18,28 @@ import java.util.List;
 @Configuration
 public class AiConfig {
 
+    private Logger logger = LoggerFactory.getLogger(AiConfig.class);
+
     @Bean
-    public ChatClient ollamaChatClient(OllamaChatModel ollamaChatModel){
+    public ChatClient ollamaChatClient(OllamaChatModel ollamaChatModel, ChatMemory chatMemory){
+
+        //we will create a chatMemory advisor using builder
+        MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor
+                .builder(chatMemory)
+                .build();
+        this.logger.info("chatMemory impl class " + chatMemory.getClass().getName());
+
         return ChatClient.builder(ollamaChatModel)
 //                .defaultSystem("You are an technology expert and will answer tech related questions ")
                 //we cam add Advisors or middlewares to do specific tasks and operations like 1) logging and
                 // 2) stopping response for sensitive words and many more things like this:
-                .defaultAdvisors(new CustomTokenCountAdvisor(),
+                .defaultAdvisors(messageChatMemoryAdvisor, //for chat memory, tomake llm remeber
+                         new CustomTokenCountAdvisor(),
 //                         new SimpleLoggerAdvisor(), //this helps in logging
                          new SafeGuardAdvisor(List.of("game", "games", "Fraud"))) //this advisor helps in gaurding the llm to respond for any given sensitive word
                 .defaultOptions(OllamaChatOptions.builder()
                         .model("llama3.2:latest")
+                        .maxTokens(250)
                         .temperature(0.5)
 
                 )

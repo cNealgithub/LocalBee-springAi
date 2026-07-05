@@ -95,8 +95,9 @@ public class AiServiceImpl implements AiService {
     }
 
     @Override
-    public Flux<String> streamingChatResponse(String uQuery, String sm) {
+    public Flux<String> streamingChatResponse(String uQuery, String sm, String conversationId) {
 
+//        String conversationIdKey = "org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY";
         String rawUserQuery = "what is {uQuery} , answer in points";
         PromptTemplate promptTemplate = PromptTemplate.builder().template(rawUserQuery).build();
         String renderedMessage = promptTemplate.render(Map.of(
@@ -109,9 +110,23 @@ public class AiServiceImpl implements AiService {
         ));
         return this.ollamaChatClient
                 .prompt()
-                .system(rawSystemMessage)
+                .system(renderedSystemMessage)
                 .user(renderedMessage)
+                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", conversationId))
                 .stream()
+                .content()
+                //added contextWrite to write he conversationId in context, as in streaming response the conversationId gets lost if not added explicitly to context
+                .contextWrite(context -> context.put("chat_memory_conversation_id", conversationId));
+    }
+
+    @Override
+    public String memoryChat(String query, String conversationId) {
+
+
+        return this.ollamaChatClient
+                .prompt(query)
+                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", conversationId))
+                .call()
                 .content();
     }
 }

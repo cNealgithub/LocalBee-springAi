@@ -1,7 +1,6 @@
 package com.cnealgithub.springAiTut.Service;
 
 import com.cnealgithub.springAiTut.Entity.ResponseStructure;
-import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 
 public interface AiService {
@@ -11,5 +10,7 @@ public interface AiService {
 
      String chatTemplate(String uQuery, String subjectMatter);
 
-     Flux<String> streamingChatResponse(String uQuery, String sm);
+     Flux<String> streamingChatResponse(String uQuery, String sm, String conversationId);
+
+     String memoryChat(String query, String conversationId);
 }

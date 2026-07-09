@@ -3,21 +3,31 @@ package com.cnealgithub.springAiTut.Service.Impl;
 import com.cnealgithub.springAiTut.Entity.ResponseStructure;
 import com.cnealgithub.springAiTut.Service.AiService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AiServiceImpl implements AiService {
 
     private final ChatClient ollamaChatClient;
+    private final VectorStore vectorStore;
+    private Logger logger = LoggerFactory.getLogger(AiService.class);
 
     @Override
     public String chat(String query) {
@@ -98,16 +108,34 @@ public class AiServiceImpl implements AiService {
     public Flux<String> streamingChatResponse(String uQuery, String sm, String conversationId) {
 
 //        String conversationIdKey = "org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY";
-        String rawUserQuery = "what is {uQuery} , answer in points";
+        String rawUserQuery = "{uQuery} , answer in points";
         PromptTemplate promptTemplate = PromptTemplate.builder().template(rawUserQuery).build();
         String renderedMessage = promptTemplate.render(Map.of(
                 "uQuery", uQuery
         ));
-        String rawSystemMessage = "you are an expert in {subjectMatter} and always give real life examples";
+
+        //for RAG and contextual answering
+//        1) load our data from vector DB
+//        building searchRequest to pass to the similaritySerach method
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(uQuery)
+                .topK(3)
+                .similarityThreshold(0.5)
+                .build();
+        List<Document> documentList = vectorStore.similaritySearch(searchRequest);
+        List<String> stringifiedDocumentList = documentList.stream().map(Document::getText).toList();
+        String contextDocument = String.join(",", stringifiedDocumentList);
+//        logging the contextDocumentsData
+        this.logger.info("Context document data: {}",contextDocument);
+
+        String rawSystemMessage = "you are the support assistant of BrewBuy and you will clarify the user queries strictly on the basis of DOCUMENTS "+
+                ", and strictly answer to only those questions that are from DOCUMENTS and for any query outside DOCUMENTS don't reply to it , instead respond:-'i cannot answer questions out of my data source'"+
+                "DOCUMENTS:{documents}";
         SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder().template(rawSystemMessage).build();
         String renderedSystemMessage = systemPromptTemplate.render(Map.of(
-                "subjectMatter", sm
+                "documents", contextDocument
         ));
+
         return this.ollamaChatClient
                 .prompt()
                 .system(renderedSystemMessage)
@@ -122,11 +150,17 @@ public class AiServiceImpl implements AiService {
     @Override
     public String memoryChat(String query, String conversationId) {
 
-
+        String conversationIdKey = ChatMemory.CONVERSATION_ID;
         return this.ollamaChatClient
                 .prompt(query)
-                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", conversationId))
+                .advisors(advisorSpec -> advisorSpec.param(conversationIdKey, conversationId))
                 .call()
                 .content();
+    }
+
+    @Override
+    public void addDataToVectorDb(List<String> dataForVector) {
+        List<Document> dataDoc = dataForVector.stream().map(Document::new).toList();
+        this.vectorStore.add(dataDoc);
     }
 }

@@ -34,7 +34,7 @@ public class AiChatController {
 
    @GetMapping("/stream-chat")
     public ResponseEntity<Flux<String>> streamingChat(@RequestParam(value = "uQuery") String uQuery,
-                                                      @RequestParam(value = "sm") String sm,
+                                                      @RequestParam(value = "sm", required = false) String sm,
                                                       @RequestParam(value = "chatId", required = false) String chatId){
 
        String conversationId = (chatId != null && !chatId.isEmpty()) ? chatId : UUID.randomUUID().toString();

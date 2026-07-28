@@ -48,4 +48,10 @@ public class AiChatController {
                .header("convoId: " , conversationId)
                .body(aiService.memoryChat(query, conversationId));
    }
+   // Trying out Advanced RAG flows
+    @GetMapping("/chat/advanceRag")
+    public ResponseEntity<Flux<String>> advanceRagStreamChat(@RequestParam(value = "uQuery") String query,
+                                                             @RequestParam(value = "chatId") String chatId) {
+       return ResponseEntity.ok(aiService.advanceRagChat(query, chatId));
+    }
 }

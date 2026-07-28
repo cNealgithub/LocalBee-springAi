@@ -1,6 +1,7 @@
 package com.cnealgithub.springAiTut.Service;
 
 import com.cnealgithub.springAiTut.Entity.ResponseStructure;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface AiService {
      String memoryChat(String query, String conversationId);
 
      void addDataToVectorDb(List<String> dataForVector);
+
+     Flux<String> advanceRagChat(String query, String chatId);
 }

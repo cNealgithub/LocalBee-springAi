@@ -52,7 +52,7 @@ public class AiConfig {
                          new SafeGuardAdvisor(List.of("game", "games", "Fraud"))) //this advisor helps in gaurding the llm to respond for any given sensitive word
                 .defaultOptions(OllamaChatOptions.builder()
                         .model("llama3.2:latest")
-                        .maxTokens(200)
+                        .maxTokens(300)
                         .temperature(0.5)
 
                 )

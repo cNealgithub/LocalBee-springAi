@@ -19,5 +19,7 @@ public interface AiService {
 
      void addDataToVectorDb(List<String> dataForVector);
 
-     Flux<String> advanceRagChat(String query, String chatId);
+     Flux<String> naiveAdvanceRagChat(String query, String chatId);
+
+     Flux<String> fullyAdvanceRag(String query, String chatId);
 }

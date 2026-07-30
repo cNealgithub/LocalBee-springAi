@@ -13,6 +13,8 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -199,7 +201,7 @@ public class AiServiceImpl implements AiService {
     }
 
     @Override
-    public Flux<String> advanceRagChat(String query, String chatId) {
+    public Flux<String> naiveAdvanceRagChat(String query, String chatId) {
 
         //build User quer
         String rawQuery = "{userQuery}, answer in points";
@@ -225,8 +227,55 @@ public class AiServiceImpl implements AiService {
                 .prompt()
                 .system(systemPrompt)
                 .user(renderedUserPrompt)
-                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", chatId))
+//                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", chatId))
                 .advisors(retrievalAugmentationAdvisor)   // Activates Advanced RAG
+                .stream()
+                .content();
+//                .contextWrite(context -> context.put("chat_memory_conversation_id", chatId));
+    }
+
+    /**
+     * @param query
+     * @param chatId
+     * @return
+     * The advance flow: pre Retrieval -> retrieval -> post retrieval -> generation -> response
+     */
+    @Override
+    public Flux<String> fullyAdvanceRag(String query, String chatId) {
+//        user prompt parsing
+//        String rawQuery = "{uQuery}, answer in points";
+//        PromptTemplate promptTemplate = PromptTemplate.builder().template(rawQuery).build();
+//        String renderedQuery = promptTemplate.render(Map.of("uQuery", query));
+
+        //      system prompt
+        String systemPrompt = "You are the chat assistant of BrewBuy. "
+                + "Strictly answer to only those questions that are from the provided context documents. "
+                + "If the answer is not in the context, respond EXACTLY: 'I cannot answer questions out of my data source'.";
+
+//        Pre-Retrieval
+        var retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor
+                .builder()
+                .queryTransformers(RewriteQueryTransformer.builder()
+                        .chatClientBuilder(this.ollamaChatClient.mutate()
+                                // Pass the conversation ID to the background transformer client
+                                .defaultAdvisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId)))
+                        .build())
+                // Retrieval
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .similarityThreshold(0.4)
+                        .vectorStore(this.vectorStore)
+                        .topK(3)
+                        .build())
+                .queryAugmenter(ContextualQueryAugmenter.builder()
+                        .allowEmptyContext(true)
+                        .build())
+                .build();
+        return this.ollamaChatClient
+                .prompt()
+                .system(systemPrompt)
+                .user(query + ", answer in points")
+                .advisors(retrievalAugmentationAdvisor)
+                .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", chatId))
                 .stream().content()
                 .contextWrite(context -> context.put("chat_memory_conversation_id", chatId));
     }

@@ -48,12 +48,12 @@ public class AiConfig {
                 // 2) stopping response for sensitive words and many more things like this:
                 .defaultAdvisors(messageChatMemoryAdvisor, //for chat memory, tomake llm remeber
                          new CustomTokenCountAdvisor(),
-//                         new SimpleLoggerAdvisor(), //this helps in logging
+                         new SimpleLoggerAdvisor(), //this helps in logging
                          new SafeGuardAdvisor(List.of("game", "games", "Fraud"))) //this advisor helps in gaurding the llm to respond for any given sensitive word
                 .defaultOptions(OllamaChatOptions.builder()
                         .model("llama3.2:latest")
                         .maxTokens(300)
-                        .temperature(0.5)
+                        .temperature(0.1)
 
                 )
                 //.defaultSystem("You are an expert technical curator for a developer marketplace. " +

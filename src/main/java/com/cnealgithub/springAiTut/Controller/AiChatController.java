@@ -49,9 +49,16 @@ public class AiChatController {
                .body(aiService.memoryChat(query, conversationId));
    }
    // Trying out Advanced RAG flows
-    @GetMapping("/chat/advanceRag")
-    public ResponseEntity<Flux<String>> advanceRagStreamChat(@RequestParam(value = "uQuery") String query,
-                                                             @RequestParam(value = "chatId") String chatId) {
-       return ResponseEntity.ok(aiService.advanceRagChat(query, chatId));
+   // The naive approach
+    @GetMapping("/chat/naiveAdvanceRag")
+    public ResponseEntity<Flux<String>> naiveAdvanceRagStreamChat(@RequestParam(value = "uQuery") String query,
+                                                                  @RequestParam(value = "chatId", required = false) String chatId) {
+       return ResponseEntity.ok(aiService.naiveAdvanceRagChat(query, chatId));
+    }
+   // The advance flow: pre Retrieval -> retrieval -> post retrieval -> generation -> response
+    @GetMapping("/advanceRag/Chat")
+    public ResponseEntity<Flux<String>> advanceRag(@RequestParam(value = "uQuery")String query,
+                                                   @RequestParam(value = "chatId")String chatId){
+       return ResponseEntity.ok(aiService.fullyAdvanceRag(query, chatId));
     }
 }

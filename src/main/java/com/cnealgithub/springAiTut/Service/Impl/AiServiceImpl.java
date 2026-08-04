@@ -266,6 +266,7 @@ public class AiServiceImpl implements AiService {
                         .vectorStore(this.vectorStore)
                         .topK(3)
                         .build())
+                //Retrieval :: augment query with context (previous queries or chat history)
                 .queryAugmenter(ContextualQueryAugmenter.builder()
                         .allowEmptyContext(true)
                         .build())

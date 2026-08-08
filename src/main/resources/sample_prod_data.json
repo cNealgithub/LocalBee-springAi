@@ -1,0 +1,34 @@
+[
+  {
+    "id": "TPL-001",
+    "name": "Spring Boot Microservices Boilerplate",
+    "description": "A production-ready microservices architecture template using Spring Boot, Spring Cloud, and Docker.",
+    "category": "Backend",
+    "price": 49.99,
+    "tags": ["spring-boot", "microservices", "java", "docker"]
+  },
+  {
+    "id": "TPL-002",
+    "name": "React Admin Dashboard",
+    "description": "A fully responsive and customizable admin dashboard built with React, Vite, and Tailwind CSS.",
+    "category": "Frontend",
+    "price": 39.99,
+    "tags": ["react", "vite", "tailwind", "ui-kit"]
+  },
+  {
+    "id": "TPL-003",
+    "name": "PostgreSQL Vector Store Setup Guide",
+    "description": "Comprehensive scripts and guide to set up pgvector for local LLM RAG pipelines.",
+    "category": "Database",
+    "price": 19.99,
+    "tags": ["postgresql", "pgvector", "rag", "database"]
+  },
+  {
+    "id": "TPL-004",
+    "name": "Spring AI Contextual Chat Module",
+    "description": "Out-of-the-box pipeline for handling multi-turn conversation memory threads with local Ollama support.",
+    "category": "AI",
+    "price": 59.99,
+    "tags": ["spring-ai", "ollama", "chat-memory", "rag"]
+  }
+]

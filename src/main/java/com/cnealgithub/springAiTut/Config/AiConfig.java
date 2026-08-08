@@ -53,13 +53,19 @@ public class AiConfig {
                 .defaultOptions(OllamaChatOptions.builder()
                         .model("llama3.2:latest")
                         .maxTokens(300)
-                        .temperature(0.1)
-
-                )
+                        .temperature(0.1))
                 //.defaultSystem("You are an expert technical curator for a developer marketplace. " +
 //                        "When a user requests a code template, " +
 //                        "you must return ONLY the raw code block. Do not include greetings, explanations, or markdown formatting outside of the code itself.")
                 .build();
     }
-
+//    testing the Docker DMR model
+//    @Bean
+//    public ChatClient openAiBasedDmrClient(OpenAiChatModel openAiChatModel){
+//        return ChatClient.builder(openAiChatModel)
+//                .defaultOptions(OpenAiChatOptions.builder()
+//                        .maxTokens(250)
+//                        .temperature(0.2))
+//                .build();
+//    }
 }

@@ -248,8 +248,7 @@ public class AiServiceImpl implements AiService {
 //        String renderedQuery = promptTemplate.render(Map.of("uQuery", query));
 
         //      system prompt
-        String systemPrompt = "You are the chat assistant of BrewBuy. "
-                + "Strictly answer to only those questions that are from the provided context documents. "
+        String systemPrompt = "Strictly answer to only those questions that are from the provided context documents. "
                 + "If the answer is not in the context, respond EXACTLY: 'I cannot answer questions out of my data source'.";
 
 //        Pre-Retrieval
